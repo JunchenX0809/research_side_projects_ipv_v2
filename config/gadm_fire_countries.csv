@@ -1,0 +1,22 @@
+iso3,country_wave,adm0_name,adm0_pcode,country_slug,gadm_version,admin_level,enabled,defer_reason,notes
+MWI,Malawi (2013),Malawi,MW,malawi,36,2,1,,
+NAM,Namibia (2019),Namibia,NA,namibia,36,2,1,,adm0_pcode NA per Excel gap; confirm with PI
+NGA,Nigeria (2014),Nigeria,NG,nigeria,36,2,1,,775 ADM2; long GEE runtime
+RWA,Rwanda,Rwanda,RW,rwanda,36,2,1,,
+TZA,Tanzania (2009),Tanzania,TZ,tanzania,36,2,0,export_done,GADM 3.6 183 ADM2; outputs tanzania_*_gadm36_2009.csv
+TZA,Tanzania (2024),Tanzania,TZ,tanzania,41,2,1,,186 ADM2 GADM 4.1; separate from 2009 wave
+MOZ,Mozambique (2019),Mozambique,MZ,mozambique,40,2,1,,129 ADM2; GADM 4.0 per VACS rules
+ZMB,Zambia (2014),Zambia,ZM,zambia,36,2,1,,
+ZWE,Zimbabwe (2017),Zimbabwe,ZW,zimbabwe,36,2,0,notebook_poc_done,Skip in --all; use notebook or --iso3 ZWE
+LSO,Letsotho (2018),Lesotho,LS,lesotho,36,1,0,,ADM1-only (no GADM ADM2); run explicitly: --iso3 LSO
+MDA,Moldova (2013),Moldova,MD,moldova,36,1,0,,ADM1-only; 2019 VACS despite 2013 label; run explicitly: --iso3 MDA
+KHM,Cambodia (2013),Cambodia,KH,cambodia,36,2,1,,178 ADM2
+COL,Colombia (2018),Colombia,CO,colombia,36,2,1,,1065 ADM2 - long runtime
+CIV,Cotedivoire (2019),Cote d'Ivoire,CI,cotedivoire,36,2,1,,33 ADM2 (GADM3.6 coarse; ADM3/4 exist)
+SLV,El Salvador (2018),El Salvador,SV,elsalvador,36,2,1,,266 ADM2
+SWZ,Eswatini (2007),Eswatini,SZ,eswatini,36,2,1,,2007 wave -> GADM3.6
+SWZ,Eswatini (2022),Eswatini,SZ,eswatini,41,2,1,,2022 wave -> GADM4.1
+HTI,Haiti (2012),Haiti,HT,haiti,36,2,1,,41 ADM2
+HND,Honduras (2017),Honduras,HN,honduras,36,2,1,,298 ADM2
+KEN,Kenya (2010),Kenya,KE,kenya,36,2,1,,wave 1 of 2
+KEN,Kenya(2019),Kenya,KE,kenya,36,2,1,,wave 2 of 2 (label has no space)

@@ -1,0 +1,16 @@
+job_id,iso3,country_wave,adm0_name,adm0_pcode,country_slug,gadm_version,admin_level,boundary_format,boundary_dir,expected_units,enabled,notes
+COL_2018_ADM1,COL,Colombia (2018),Colombia,CO,colombia,36,1,geojson,data/raw/gadm/3.6,32,1,Requested by team
+COL_2018_ADM2,COL,Colombia (2018),Colombia,CO,colombia,36,2,geojson,data/raw/gadm/3.6,1065,1,Requested by team; largest boundary job
+KEN_2010_ADM1,KEN,Kenya (2010),Kenya,KE,kenya,36,1,geojson,data/raw/gadm/3.6,47,1,Historical wave matched to GADM 3.6
+KEN_2010_ADM2,KEN,Kenya (2010),Kenya,KE,kenya,36,2,geojson,data/raw/gadm/3.6,301,1,Historical wave matched to GADM 3.6
+KEN_2019_ADM1,KEN,Kenya(2019),Kenya,KE,kenya,41,1,shapefile,data/raw/gadm/4.1/Kenya,47,1,Later wave matched to GADM 4.1
+KEN_2019_ADM2,KEN,Kenya(2019),Kenya,KE,kenya,41,2,shapefile,data/raw/gadm/4.1/Kenya,300,1,Later wave matched to GADM 4.1
+MOZ_2019_ADM1,MOZ,Mozambique (2019),Mozambique,MZ,mozambique,40,1,geojson,data/raw/gadm/4.0,11,1,Requested by team
+MOZ_2019_ADM2,MOZ,Mozambique (2019),Mozambique,MZ,mozambique,40,2,geojson,data/raw/gadm/4.0,129,1,Requested by team
+NAM_2019_ADM1,NAM,Namibia (2019),Namibia,NA,namibia,36,1,geojson,data/raw/gadm/3.6,13,1,ADM1 requested; NA follows existing project country-code convention
+NGA_2014_ADM1,NGA,Nigeria (2014),Nigeria,NG,nigeria,36,1,geojson,data/raw/gadm/3.6,37,1,Requested by team
+NGA_2014_ADM2,NGA,Nigeria (2014),Nigeria,NG,nigeria,36,2,geojson,data/raw/gadm/3.6,775,1,Requested by team; second-largest boundary job
+TZA_2009_ADM1,TZA,Tanzania (2009),Tanzania,TZ,tanzania,36,1,geojson,data/raw/gadm/3.6,30,1,Historical wave matched to GADM 3.6
+TZA_2009_ADM2,TZA,Tanzania (2009),Tanzania,TZ,tanzania,36,2,geojson,data/raw/gadm/3.6,183,1,Historical wave matched to GADM 3.6
+TZA_2024_ADM1,TZA,Tanzania (2024),Tanzania,TZ,tanzania,41,1,geojson,data/raw/gadm/4.1,31,1,Later wave matched to GADM 4.1
+TZA_2024_ADM2,TZA,Tanzania (2024),Tanzania,TZ,tanzania,41,2,geojson,data/raw/gadm/4.1,186,1,Later wave matched to GADM 4.1
