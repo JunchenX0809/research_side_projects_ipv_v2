@@ -1,90 +1,85 @@
-# VACS satellite-exposure workflows
+# VACS satellite exposure and linkage
 
-Reproducible code for constructing country- and administrative-area satellite
-exposure measures with Google Earth Engine. The tracked repository contains
-source code, configuration, and methods documentation; raw and processed study
-data remain outside version control.
+Code to build administrative satellite exposure measures and link them to VACS respondents using approved survey dates and geography.
 
-## What the repository computes
+## How the code fits together
 
-- MODIS FIRMS active-fire detection counts
-- MODIS MOD14A1/MYD14A1 fire radiative power (FRP)
-- MODIS MCD64A1 burned area
-- VIIRS VNP14A1 active-fire counts and FRP
-- VIIRS VNP64A1 burned area
-- MODIS MAIAC MCD19A2 aerosol optical depth (AOD)
-- Hansen Global Forest Change zonal summaries for the Zambia pilot
-
-Shared Earth Engine and tabular helpers live under `utils/`. Country and
-demonstration notebooks live under `exposure_notebooks/`, while command-line
-entry points live under `scripts/`.
-
-## Exposure workflow
+`scripts/` contains entry points, `utils/` contains reusable calculations, and `config/` records run and product choices.
 
 ```mermaid
 flowchart LR
-  TIME["Approved study-timing metadata\nlocal and non-versioned"]
-  BOUNDS["GADM boundaries\nlocal and non-versioned"]
-  RUN["Notebooks and scripts"]
-  HELPERS["Shared helpers in utils/"]
-  GEE["Google Earth Engine\nMODIS / VIIRS / FIRMS / Hansen"]
-  RESULTS["Administrative-area CSV outputs\nlocal and non-versioned"]
-
-  TIME --> RUN
-  BOUNDS --> HELPERS
-  RUN --> HELPERS
-  HELPERS --> GEE
-  GEE --> HELPERS
-  HELPERS --> RESULTS
+  subgraph Scripts["scripts/"]
+    GEO["admin_geography"]
+    FIRE["fire_exposure"]
+    CLUSTER["fire_clusters"]
+    AOD["aod_exposure"]
+    LINK["respondent_linkage"]
+  end
+  subgraph Utils["utils/"]
+    BOUND["gadm_boundaries"]
+    TIME["vacs_survey_time"]
+    FIREUTIL["adam_* / gee_fire_zonal / indonesia_viirs"]
+    AODUTIL["aod/*"]
+  end
+  GEO --> BOUND
+  GEO --> TIME
+  FIRE --> BOUND
+  FIRE --> TIME
+  FIRE --> FIREUTIL
+  CLUSTER --> BOUND
+  CLUSTER --> FIREUTIL
+  AOD --> AODUTIL
+  LINK --> TIME
 ```
 
-Exposure windows are defined from approved project-level study dates. Satellite
-pixels are summarized to GADM administrative boundaries; no respondent-level
-records are required by the tracked satellite pipeline.
+## Exposure measures
 
-## Repository map
+FRP means fire radiative power; AOD means aerosol optical depth. The fire-cluster branch counts connected VNP64A1 burn patches, not verified ignitions.
 
-| Path | Role |
-|---|---|
-| `config/` | Non-sensitive country/run configuration |
-| `exposure_notebooks/` | GEE and FIRMS exploration and demonstrations |
-| `utils/` | Shared boundary, date, QA, aggregation, and export helpers |
-| `scripts/` | Reproducible command-line export and crosswalk entry points |
-| `gee_zambia/` | Hansen zonal helper and Zambia GEE notes |
-| `report_outputs/` | Versioned aggregate methods/progress documentation |
-
-## Data and credential boundary
-
-- `data/`, generated outputs, local working notes, and test fixtures are ignored.
-- Respondent-level statistical files are explicitly ignored by extension as a
-  defense-in-depth safeguard, even if placed outside `data/` accidentally.
-- Credentials belong in the local environment or `.env`; `.env` files are
-  ignored. Do not place Earth Engine credentials or FIRMS map keys in notebooks,
-  scripts, outputs, or documentation.
-- Crosswalk scripts accept non-sensitive CSVs containing only distinct approved
-  geography labels. They do not require respondent-level source files.
-- Before publishing changes, review `git diff --cached` and scan the tracked
-  snapshot for credentials and prohibited data references.
-
-## Setup
-
-Use Python 3.11 or newer:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+```mermaid
+flowchart LR
+  MODIS["MODIS products + FIRMS"] -->|"fire count, FRP, burned area"| FIRE["fire_exposure scripts"]
+  V14["VIIRS VNP14A1"] -->|"unique fire count, FRP"| FIRE
+  V64["VIIRS VNP64A1"] -->|"burned area"| FIRE
+  V64 -->|"burn dates"| CLUSTER["fire_clusters scripts"]
+  FIRE -.->|"VIIRS unit/month keys"| CLUSTER
+  MAIAC["MODIS MAIAC AOD"] --> AOD["aod_exposure scripts"]
+  FIRE --> PANEL["Administrative-month exposure tables"]
+  CLUSTER --> PANEL
+  AOD --> PANEL
 ```
 
-Authenticate Earth Engine and set the project locally:
+## Respondent linkage
 
-```bash
-export EARTHENGINE_PROJECT="your-earth-engine-project"
+A wave's exposure products are selected by `config/wave_exposure_products.csv`; the linked file keeps the source respondents and records join status.
+
+```mermaid
+flowchart LR
+  LABELS["Survey geography"] --> CROSS["GADM crosswalks"]
+  CROSS --> WORKBOOK["build_vacs_gadm_linkage_workbook"]
+  WORKBOOK --> MASTER["VACS-GADM master linkage"]
+  OUTCOME["VACS outcomes"] --> BUILD["build_wave_exposure_demo"]
+  MASTER --> BUILD
+  REGISTRY["Product registry"] --> BUILD
+  PANEL["Administrative-month exposure tables"] --> BUILD
+  BUILD --> DEMO["Linked respondents + monthly panel + logs"]
+  DEMO --> VERIFY["verify_wave_exposure_demo"]
 ```
 
-For optional FIRMS API examples, set `FIRMS_MAP_KEY` locally. Never commit its
-value.
+## Review guides
 
-Individual scripts expose their arguments through `--help`. Boundary inputs and
-generated CSVs are expected under ignored local directories unless an explicit
-path is supplied.
+| Topic | Guide |
+| --- | --- |
+| Script folder map | [Script entry points](scripts/README.md) |
+| Fire metrics | [Fire exposure](skills/fire_exposure.md), [fire clusters](skills/fire_clusters.md), [country demos](skills/country_demos.md) |
+| AOD | [AOD exposure](skills/aod_exposure.md), [AOD utilities](skills/utils_aod.md) |
+| Geography and linkage | [Admin geography](skills/admin_geography.md), [respondent linkage](skills/respondent_linkage.md) |
+| Shared code and checks | [Shared utilities](skills/utils_shared.md), [quality checks](skills/quality_checks.md) |
+
+`exposure_notebooks/` contains exploratory examples; `gee_zambia/` holds the Hansen forest-change pilot.
+
+## Running locally
+
+Use Python 3.11 or newer, install `requirements.txt`, and configure Earth Engine access. Run entry points from the repository root as `.venv/bin/python -m scripts.<folder>.<module>`. Study inputs and generated data belong in local paths; credentials belong in the environment, not in source files.
+
+`build_vacs_gadm_linkage_workbook.py` writes outputs at import time, including when called with `--help`. Its guide describes its role; inspect the script before running it.
