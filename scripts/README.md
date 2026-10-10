@@ -2,7 +2,7 @@
 
 Run from the repository root with `.venv/bin/python -m scripts.<folder>.<script_name>`.
 Shared functions are in `utils/`.
-The [repository overview](../README.md) shows how these roles connect across one wave.
+The [repository overview](../README.md) shows how these roles connect for one country and survey period.
 
 ```mermaid
 flowchart TB

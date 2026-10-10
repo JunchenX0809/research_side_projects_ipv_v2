@@ -4,17 +4,19 @@ Code to build administrative satellite exposure measures and link them to VACS r
 
 ## Workflow at a glance
 
-For each VACS wave, the survey window and selected GADM geography define the exposure keys. `scripts/` runs the workflows, `utils/` supplies shared calculations, and `config/` records product and run choices.
+For each country and survey period, the survey window and selected GADM geography define the exposure keys. `scripts/` runs the workflows, `utils/` supplies shared calculations, and `config/` records product and run choices.
+
+**Terminology:** Some script and config names use `wave` to mean one country and survey period, such as Eswatini 2007 or Eswatini 2022. This README uses “country and survey period” for that unit of work.
 
 ```mermaid
 flowchart TB
-  WAVE["Wave setup: 12-month window + ADM level + GADM version"]
-  WAVE --> MEASURES["Generate or receive exposure tables"]
+  PERIOD["Country and survey period: 12-month window + ADM level + GADM version"]
+  PERIOD --> MEASURES["Generate or receive exposure tables"]
   MEASURES --> PANEL["GADM unit × month measures"]
   PANEL --> INPUTS["Join inputs: product registry + geography crosswalk + VACS outcomes"]
-  INPUTS --> BUILD["Wave builder: validate keys, derive window summaries, join respondents"]
+  INPUTS --> BUILD["Respondent linkage: validate keys, derive window summaries, join respondents"]
   BUILD --> OUTPUTS["Linked respondents + monthly panel + provenance logs"]
-  OUTPUTS --> VERIFY["Verify linked wave"]
+  OUTPUTS --> VERIFY["Verify linked output"]
 ```
 
 ## Exposure measures
@@ -45,12 +47,12 @@ Each branch produces administrative-month exposure tables.
 
 ## Respondent linkage
 
-A wave's exposure products are selected by `config/wave_exposure_products.csv`; the linked file keeps the source respondents and records join status.
+For each country and survey period, `config/wave_exposure_products.csv` selects the exposure products. The linked file keeps the source respondents and records join status.
 
 ```mermaid
 flowchart LR
   GEO["Survey geography + GADM crosswalks"] --> MASTER["VACS-GADM master linkage"]
-  MASTER --> INPUTS["Wave inputs: outcomes, exposure tables, product registry"]
+  MASTER --> INPUTS["Linkage inputs: outcomes, exposure tables, product registry"]
   INPUTS --> BUILD["build_wave_exposure_demo"]
   BUILD --> DEMO["Linked files + logs"]
   DEMO --> VERIFY["verify_wave_exposure_demo"]
