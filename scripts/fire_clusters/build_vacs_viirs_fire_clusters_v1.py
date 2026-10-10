@@ -51,6 +51,7 @@ def month_starts(start: date, end: date) -> list[date]:
 
 
 def read_reference(path: Path, level: int, start: str, end: str) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
+    """Use the active-fire CSV only to lock GADM units and the exact 12-month keys."""
     active = pd.read_csv(path)
     gid_col = f"adm{level}_gid"
     if gid_col not in active:
@@ -70,6 +71,7 @@ def read_reference(path: Path, level: int, start: str, end: str) -> tuple[pd.Dat
 
 
 def load_boundaries(iso3: str, level: int, version: str, gids: list[str]) -> gpd.GeoDataFrame:
+    """Require GADM polygons to match every unit in the active-fire reference."""
     frame = gpd.read_file(gadm_geojson_path(iso3, level, version=version, root=ROOT))
     raw_gid = f"ID_{level}" if f"ID_{level}" in frame else f"GID_{level}"
     if raw_gid not in frame:
@@ -86,6 +88,7 @@ def load_boundaries(iso3: str, level: int, version: str, gids: list[str]) -> gpd
 
 
 def projected_grid(boundaries: gpd.GeoDataFrame) -> tuple[str, gpd.GeoDataFrame, tuple[int, int, int, int]]:
+    """Choose the country UTM zone and align its raster grid to 500 m cells."""
     center = boundaries.to_crs("EPSG:4326").geometry.union_all().representative_point()
     zone = min(60, max(1, int(math.floor((center.x + 180) / 6) + 1)))
     crs = f"EPSG:{32600 + zone if center.y >= 0 else 32700 + zone}"
@@ -99,6 +102,7 @@ def projected_grid(boundaries: gpd.GeoDataFrame) -> tuple[str, gpd.GeoDataFrame,
 
 
 def tile_windows(width: int, height: int):
+    """Yield raster windows small enough for Earth Engine tile downloads."""
     side = int(math.floor(math.sqrt(MAX_TILE_CELLS)))
     for row0 in range(0, height, side):
         for col0 in range(0, width, side):
@@ -173,6 +177,7 @@ def assign_units(
     labels: np.ndarray, cells: np.ndarray, grid: tuple[int, int, int, int], crs: str,
     scale_m: float = SCALE_M,
 ) -> tuple[np.ndarray, int, int, int, float]:
+    """Assign each patch by centroid, then burned-cell and nearest-polygon fallbacks."""
     points = gpd.GeoDataFrame({"patch_id": np.arange(len(x), dtype=np.int32)}, geometry=gpd.points_from_xy(x, y), crs=crs)
     joined = gpd.sjoin(points, projected, how="left", predicate="intersects")
     ties = int(joined.index.duplicated().sum())
@@ -251,6 +256,7 @@ def main() -> None:
     cells, days, duplicates, images = download_nodes(grid, crs, country, start, end)
     if not len(cells):
         raise ValueError("No burned cells in the 12-month window; inspect source coverage")
+    # Patch graph and centroids come from scripts/fire_clusters/build_zambia_viirs_fire_clusters_v1.py.
     count, labels, edges = zambia.label_patches(cells, days, grid[2], grid[3], MAX_DATE_GAP)
     zambia.CRS = crs
     x, y, patch_sizes = zambia.centroids_for_patches(labels, cells, count, grid)

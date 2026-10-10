@@ -92,6 +92,7 @@ def finalize_export(
 
 
 def validate_export(frame: pd.DataFrame, *, job: AodJob) -> dict[str, Any]:
+    """Check output units, months, keys, and measures before publishing an AOD CSV."""
     gid = f"adm{job.admin_level}_gid"
     expected_rows = job.expected_units * 12
     errors: list[str] = []

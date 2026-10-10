@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
+# Shared logging and source hashes: scripts/respondent_linkage/build_wave_exposure_demo.py.
 from scripts.respondent_linkage.build_wave_exposure_demo import RunLog, sha256
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,6 +29,7 @@ FIELDS = {
 
 
 def load_monthly(path: Path, product: str, lookup: pd.DataFrame, log: RunLog):
+    """Aggregate county-month measures to survey provinces using metric-specific rules."""
     df = pd.read_csv(path)
     gid = "adm1_gid" if "adm1_gid" in df else "GID_1"
     for col in ("month_start", "month_end"):
@@ -43,6 +45,7 @@ def load_monthly(path: Path, product: str, lookup: pd.DataFrame, log: RunLog):
         raise ValueError(f"{path.name}: monthly source metric contains nulls")
     df = df.merge(lookup[["gadm_gid", "survey_admin1"]], left_on=gid, right_on="gadm_gid",
                   how="left", validate="many_to_one")
+    # FIELDS sums additive measures but takes the maximum of county max-FRP values.
     agg = df.groupby(["survey_admin1", "month_start", "month_end"], as_index=False).agg(
         FIELDS[product]
     )
@@ -56,6 +59,7 @@ def load_monthly(path: Path, product: str, lookup: pd.DataFrame, log: RunLog):
 
 
 def build(dry_run: bool) -> None:
+    """Join province exposure to Kenya 2010 respondents for a provisional trial."""
     log = RunLog()
     log.step("start Kenya 2010 provisional province-level v1 trial")
     lookup = pd.read_csv(LOOKUP)

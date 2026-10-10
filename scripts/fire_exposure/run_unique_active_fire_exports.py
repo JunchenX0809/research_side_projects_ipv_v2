@@ -22,6 +22,7 @@ _REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
+# Country selection and exposure windows come from scripts/fire_exposure/run_gadm_fire_exports.py.
 from scripts.fire_exposure.run_gadm_fire_exports import (
     MANIFEST_PATH,
     CountryJob,
@@ -172,6 +173,7 @@ def select_unique_jobs(
 
 
 def admin_levels_for_job(job: CountryJob, override: int | None) -> tuple[int, ...]:
+    """Export both available levels by default; reject ADM2 for ADM1-only waves."""
     if override is not None:
         if override == 2 and job.admin_level < 2:
             raise ValueError(f"{job.country_wave} is ADM1-only; ADM2 is unavailable")
@@ -298,6 +300,7 @@ def run_one(
     skip_existing: bool,
     dry_run: bool,
 ) -> str:
+    """Export one unique-pixel panel using the fleet window and manifest rules."""
     exposure_start, exposure_end = resolve_exposure_window(survey_parsed, job.country_wave)
     if sensor == "viirs" and exposure_start < VIIRS_FULL_COVERAGE_START:
         print(

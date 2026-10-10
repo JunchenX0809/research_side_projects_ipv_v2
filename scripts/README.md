@@ -1,7 +1,31 @@
 # Script entry points
 
 Run from the repository root with `.venv/bin/python -m scripts.<folder>.<script_name>`.
-Shared functions remain in `utils/`; local data stays outside the code-review copy.
+Shared functions are in `utils/`.
+The [repository overview](../README.md) shows how these roles connect across one wave.
+
+```mermaid
+flowchart TB
+  subgraph PREP["Prepare geography"]
+    direction LR
+    GEO["admin_geography/"] --> GEO_ROLE["GADM areas, survey dates, geography matches"]
+  end
+  subgraph MEASURES["Build exposure measures"]
+    direction LR
+    FIRE["fire_exposure/"] --> FIRE_ROLE["Fire count, FRP, burned area"]
+    CLUSTER["fire_clusters/"] --> CLUSTER_ROLE["VIIRS burn-patch counts"]
+    AOD["aod_exposure/"] --> AOD_ROLE["MAIAC AOD"]
+  end
+  subgraph LINKAGE["Link outcomes"]
+    direction LR
+    LINK["respondent_linkage/"] --> LINK_ROLE["Attach measures to VACS respondents"]
+  end
+  subgraph REVIEW["Check and demonstrate"]
+    direction LR
+    QUALITY["quality_checks/"] --> AUDIT["Audit measures and compare sensors"]
+    DEMOS["country_demos/"] --> CASES["Run scoped country examples"]
+  end
+```
 
 | Folder | Purpose |
 | --- | --- |

@@ -63,6 +63,7 @@ def _count_batch(
     attempts: int = 3,
 ) -> pd.DataFrame:
     # A masked zero-band guarantees a band even if a date has no granules.
+    """Count valid AOD pixels per day and district on one chosen sampling grid."""
     empty = ee.Image.constant(0).rename(OUTPUT_BAND).updateMask(ee.Image.constant(0))
     images = []
     for day in dates:
@@ -125,6 +126,7 @@ def _max_zero_run(values: pd.Series) -> int:
 
 
 def _summarize(daily: pd.DataFrame, months: pd.DataFrame, count_column: str) -> pd.DataFrame:
+    """Compare daily QA coverage with the shipped monthly Nigeria AOD values."""
     production = pd.read_csv(PRODUCTION_PATH)
     if production.duplicated(["adm1_gid", "month_start"]).any():
         raise ValueError("Production file has duplicate ADM1-month keys")
@@ -163,6 +165,7 @@ def _summarize(daily: pd.DataFrame, months: pd.DataFrame, count_column: str) -> 
 
 
 def _build_combined(months: pd.DataFrame, expected_rows: int) -> None:
+    """Require all three sampling grids to agree on district-day keys."""
     if not all(p.exists() for p in (NATIVE_DAILY_PATH, HALF_DAILY_PATH, EXPORT_DAILY_PATH)):
         print("All three grid audits are needed before writing combined coverage files")
         return

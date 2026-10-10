@@ -29,6 +29,7 @@ EPS = 1e-9
 
 
 def cohen_kappa(m: np.ndarray, v: np.ndarray) -> float:
+    """Measure binary agreement after accounting for chance agreement."""
     po = float((m == v).mean())
     p1a, p1b = float(m.mean()), float(v.mean())
     pe = p1a * p1b + (1 - p1a) * (1 - p1b)
@@ -36,6 +37,7 @@ def cohen_kappa(m: np.ndarray, v: np.ndarray) -> float:
 
 
 def presence_matrix(modis: pd.Series, viirs: pd.Series) -> dict:
+    """Count district-months where both, one, or neither sensor detects fire."""
     m = (modis > EPS).astype(int).to_numpy()
     v = (viirs > EPS).astype(int).to_numpy()
     both = int(((m == 1) & (v == 1)).sum())
@@ -50,6 +52,7 @@ def presence_matrix(modis: pd.Series, viirs: pd.Series) -> dict:
 
 
 def tier_labels(modis: pd.Series, viirs: pd.Series) -> tuple[np.ndarray, np.ndarray, list[float]]:
+    """Use pooled nonzero terciles so MODIS and VIIRS share intensity cutoffs."""
     pooled = pd.concat([modis, viirs])
     nz = pooled[pooled > EPS]
     e1, e2 = (np.quantile(nz, [1 / 3, 2 / 3]) if len(nz) else (0.0, 0.0))

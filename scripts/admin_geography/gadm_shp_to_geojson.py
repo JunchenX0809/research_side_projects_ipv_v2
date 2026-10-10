@@ -43,6 +43,7 @@ def _rename_gadm36_props(props: dict) -> dict:
 
 
 def shp_to_geojson(shp_path: Path, out_path: Path) -> int:
+    """Convert one shapefile, translating GADM 3.6 IDs before writing GeoJSON."""
     import geopandas as gpd
 
     gdf = gpd.read_file(shp_path)

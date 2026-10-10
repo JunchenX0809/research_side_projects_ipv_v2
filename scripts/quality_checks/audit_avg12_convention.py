@@ -68,6 +68,7 @@ def first_present(df: pd.DataFrame, names: list[str]) -> str | None:
 
 def classify(df: pd.DataFrame, avg_col: str, mon_col: str, gid: str, name: str | None,
              is_aod: bool) -> dict:
+    """Compare supplied avg12 values with monthly means and known exception patterns."""
     g = df.groupby(gid)
     supplied, mean12, sum12 = g[avg_col].first(), g[mon_col].mean(), g[mon_col].sum()
     n_units = int(g.ngroups)

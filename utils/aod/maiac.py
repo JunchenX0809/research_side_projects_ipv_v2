@@ -22,6 +22,7 @@ _Y_MAX_M = 10_007_554.677
 
 
 def modis_tile_for_lonlat(lon: float, lat: float) -> tuple[int, int]:
+    """Map a coordinate to its MODIS sinusoidal tile for source filtering."""
     lat_rad = math.radians(lat)
     x = _SINUSOIDAL_RADIUS_M * math.radians(lon) * math.cos(lat_rad)
     y = _SINUSOIDAL_RADIUS_M * lat_rad
@@ -65,6 +66,7 @@ def _tile_filter(tiles: list[str]) -> ee.Filter:
 
 def _scaled_best_quality_aod(image: ee.Image) -> ee.Image:
     raw = image.select(AOD_BAND)
+    # Bits 8-11 encode MAIAC AOD quality; class 0 is the production mask.
     aod_quality = image.select(AOD_QA_BAND).rightShift(8).bitwiseAnd(15)
     return (
         raw.multiply(AOD_SCALE_FACTOR)
@@ -78,6 +80,7 @@ def _scaled_best_quality_aod(image: ee.Image) -> ee.Image:
 def aod_collection(
     date_start: str, date_end_exclusive: str, *, tiles: list[str]
 ) -> ee.ImageCollection:
+    """Select requested MAIAC tiles and dates, then apply the production QA mask."""
     return (
         ee.ImageCollection(MAIAC_COLLECTION)
         .filter(ee.Filter.date(date_start, date_end_exclusive))
@@ -93,6 +96,7 @@ def mean_aod_image(
     tiles: list[str],
     output_band: str,
 ) -> ee.Image:
+    """Average valid AOD images; return a masked image when none exist."""
     collection = aod_collection(date_start, date_end_exclusive, tiles=tiles)
     empty = ee.Image.constant(0).rename(output_band).updateMask(ee.Image.constant(0))
     return ee.Image(

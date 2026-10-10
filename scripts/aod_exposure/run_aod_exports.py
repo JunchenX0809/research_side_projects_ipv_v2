@@ -57,6 +57,7 @@ def _retry(
     max_attempts: int,
     retry_seconds: float,
 ) -> T:
+    """Retry a transient Earth Engine operation with increasing wait times."""
     for attempt in range(1, max_attempts + 1):
         try:
             return operation()
@@ -110,6 +111,7 @@ def _extract_job(
     max_attempts: int,
     retry_seconds: float,
 ) -> tuple[Path | None, dict | None]:
+    """Run one manifest job with boundary chunks, checkpoints, and output QA."""
     started = time.monotonic()
     exposure_start, exposure_end = resolve_exposure_window(ROOT, job.country_wave)
     months = complete_calendar_months(exposure_start, exposure_end)

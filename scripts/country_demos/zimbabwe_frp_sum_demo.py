@@ -11,6 +11,7 @@ from pathlib import Path
 
 import ee
 
+# Match fleet timing through scripts/fire_exposure/run_gadm_fire_exports.py.
 from scripts.fire_exposure.run_gadm_fire_exports import resolve_exposure_window
 from utils.adam_frp_export import (
     build_adam_frp_sum_export,

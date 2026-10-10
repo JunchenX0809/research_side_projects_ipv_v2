@@ -81,6 +81,7 @@ def next_month(month: date) -> date:
 
 
 def read_v2(year: int) -> tuple[Path, pd.DataFrame, pd.DataFrame]:
+    """Check the frozen v2 schema and its Indonesia ADM2/month reference keys."""
     path = V2_DIR / f"indonesia_viirs_vnp14a1_{year}_combined.csv"
     if not path.is_file():
         raise FileNotFoundError(path)
@@ -102,6 +103,7 @@ def read_v2(year: int) -> tuple[Path, pd.DataFrame, pd.DataFrame]:
 
 
 def load_boundaries(codes: set[str]) -> tuple[gpd.GeoDataFrame, shapely.Geometry, tuple[int, int, int, int]]:
+    """Repair COD/BPS polygons and align them to the native VIIRS grid."""
     raw = gpd.read_file(SHAPEFILE)[["ADM2_PCODE", "geometry"]]
     raw["GID"] = raw.ADM2_PCODE.astype(str)
     if len(raw) != EXPECTED_ADM2_UNITS or raw.GID.duplicated().any() or set(raw.GID) != codes:
@@ -127,6 +129,7 @@ def load_boundaries(codes: set[str]) -> tuple[gpd.GeoDataFrame, shapely.Geometry
 
 
 def selected_tiles(country: shapely.Geometry, bounds: tuple[int, int, int, int], side: int) -> list[tuple[int, int, int, int]]:
+    """Keep only native-grid download tiles intersecting Indonesia."""
     row0, col0, row1, col1 = bounds
     x_origin, y_origin = NATIVE_TRANSFORM[2], NATIVE_TRANSFORM[5]
     windows = []
@@ -147,6 +150,7 @@ def selected_tiles(country: shapely.Geometry, bounds: tuple[int, int, int, int],
 
 
 def check_projection(image: ee.Image) -> None:
+    """Stop if the source Burn_Date projection differs from the expected native grid."""
     projection = image.select("Burn_Date").projection().getInfo()
     if projection["crs"] != NATIVE_CRS or not np.allclose(
         projection["transform"], NATIVE_TRANSFORM, rtol=0, atol=1e-7
@@ -155,6 +159,7 @@ def check_projection(image: ee.Image) -> None:
 
 
 def download_tile(burn: ee.Image, window: tuple[int, int, int, int], session: requests.Session) -> np.ndarray:
+    """Fetch one native-grid tile as an NPY array, retrying transient service failures."""
     row, col, height, width = window
     params = {
         "crs": NATIVE_CRS,
@@ -191,6 +196,7 @@ def month_nodes(
     collection: ee.ImageCollection,
     workers: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Cache one month of valid burned cells so annual windows can reuse it."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache = CACHE_DIR / f"{month:%Y%m}.npz"
     if cache.exists():
@@ -214,6 +220,7 @@ def month_nodes(
         tile_pool = ThreadPoolExecutor(max_workers=workers)
         tile_arrays = tile_pool.map(lambda window: download_tile_with_session(burn, window), windows)
     try:
+        # strict=True exposes a missing tile response instead of silently truncating the pairings.
         for window, array in zip(windows, tile_arrays, strict=True):
             row0, col0, _, _ = window
             local_row, local_col = np.nonzero(array > 0)
@@ -264,6 +271,7 @@ def cluster_year(
     collection: ee.ImageCollection,
     workers: int,
 ) -> tuple[pd.DataFrame, dict]:
+    """Reuse Zambia patch labeling and VACS unit assignment on the native grid."""
     start = date.fromisoformat(months.month_start.iloc[0])
     end = date.fromisoformat(months.month_end.iloc[-1])
     observations = [month_nodes(month, country, windows, session, collection, workers) for month in month_starts(start, end)]
@@ -282,11 +290,13 @@ def cluster_year(
     unique = np.r_[True, (cells[1:] != cells[:-1]) | (day[1:] != day[:-1])]
     duplicates = len(cells) - int(unique.sum())
     cells, day = cells[unique], day[unique]
+    # Reuse scripts/fire_clusters/build_zambia_viirs_fire_clusters_v1.py for patch IDs.
     n_patches, labels, n_edges = zambia.label_patches(cells, day, width, height, MAX_DATE_GAP)
     x0 = NATIVE_TRANSFORM[2] + col0 * PIXEL_M
     y0 = NATIVE_TRANSFORM[5] - row0 * PIXEL_M
     grid = (x0, y0, width, height)
     x, y, sizes = zambia.centroids_for_patches(labels, cells, n_patches, grid, scale_m=PIXEL_M)
+    # Reuse scripts/fire_clusters/build_vacs_viirs_fire_clusters_v1.py for polygon assignment.
     assigned, ties, fallback, nearest, farthest_m = vacs.assign_units(
         x, y, projected, labels, cells, grid, PROJ4, scale_m=PIXEL_M
     )
@@ -344,6 +354,7 @@ def cluster_year(
 
 
 def append_v3(year: int, v2_path: Path, clusters: pd.DataFrame) -> Path:
+    """Append two cluster columns while checking every original v2 field remains unchanged."""
     destination = V3_DIR / f"indonesia_viirs_vnp14a1_{year}_combined_v3.csv"
     if destination.exists():
         raise FileExistsError(destination)

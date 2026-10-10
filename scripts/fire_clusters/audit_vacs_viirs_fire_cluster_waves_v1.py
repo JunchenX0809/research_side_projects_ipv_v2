@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# Audit the same queue defined in scripts/fire_clusters/run_vacs_viirs_fire_cluster_waves_v1.py.
 from scripts.fire_clusters.run_vacs_viirs_fire_cluster_waves_v1 import QUEUE, ROOT, RUN_STATUS, wave_row
 
 REPORT = ROOT / "skills/0927_fireClusters/vacs_viirs_generation_audit_v1.md"

@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# Use the builder's hash helper: scripts/respondent_linkage/build_wave_exposure_demo.py.
 from scripts.respondent_linkage.build_wave_exposure_demo import sha256
 
 ROOT = Path(__file__).resolve().parents[2]

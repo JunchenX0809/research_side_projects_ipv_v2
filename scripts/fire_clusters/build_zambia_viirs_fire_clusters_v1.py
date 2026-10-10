@@ -53,6 +53,7 @@ MAX_DATE_GAP = 5
 
 
 def grid_for_country(adm2: gpd.GeoDataFrame) -> tuple[int, int, int, int]:
+    """Align a padded 500 m UTM grid and reject downloads above Earth Engine limits."""
     minx, miny, maxx, maxy = adm2.to_crs(CRS).total_bounds
     x0 = math.floor(minx / SCALE_M) * SCALE_M - SCALE_M
     y0 = math.ceil(maxy / SCALE_M) * SCALE_M + SCALE_M
@@ -172,6 +173,7 @@ def label_patches(cells: np.ndarray, days: np.ndarray, width: int, height: int, 
             target_parts.append(to_idx[close])
     source = np.concatenate(source_parts)
     target = np.concatenate(target_parts)
+    # SciPy's sparse graph labels transitive patches without allocating an n-by-n dense matrix.
     graph = coo_matrix((np.ones(len(source), dtype=np.uint8), (source, target)), shape=(n, n)).tocsr()
     count, labels = connected_components(graph, directed=False, return_labels=True)
     return int(count), labels.astype(np.int32), len(source)

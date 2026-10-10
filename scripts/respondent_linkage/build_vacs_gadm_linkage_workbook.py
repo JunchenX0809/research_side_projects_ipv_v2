@@ -25,6 +25,7 @@ def pick(df, spec):
 
 def frame(country, year, df, a1=None, a2=None, name=None,
           gid1=None, gid2=None, gname='gadm_name', lvl='ADM2', n='n_respondents'):
+    """Place one wave's crosswalk into the shared workbook/master columns."""
     out=pd.DataFrame(index=df.index)
     out['survey_admin1']=pick(df,a1)
     out['survey_admin2']=pick(df,a2)
@@ -187,6 +188,7 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter as L
 
 def opgid(f):
+    """Select the ADM1 or ADM2 GADM ID actually used by each wave."""
     return np.where(f.gadm_level_used.astype(str)=='ADM2', f.gadm_adm2_gid, f.gadm_adm1_gid)
 
 wb=openpyxl.Workbook(); wb.remove(wb.active)

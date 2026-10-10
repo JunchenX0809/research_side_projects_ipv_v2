@@ -113,6 +113,7 @@ def _csv_cell(value: object) -> str:
 
 
 def load_manifest(path: Path | None = None) -> list[CountryJob]:
+    """Read country jobs and reject unsupported GADM versions or ADM levels."""
     path = path or MANIFEST_PATH
     df = pd.read_csv(path)
     jobs: list[CountryJob] = []
@@ -224,6 +225,7 @@ def viirs_output_path(
 
 
 def resolve_exposure_window(survey_parsed: pd.DataFrame, country_wave: str) -> tuple[date, date]:
+    """Use the approved field start to define the preceding 12-month exposure window."""
     row = get_country_wave_row(survey_parsed, country_wave)
     flag = row.get("date_parse_flag")
     if flag not in ALLOWED_DATE_FLAGS:
@@ -235,6 +237,7 @@ def resolve_exposure_window(survey_parsed: pd.DataFrame, country_wave: str) -> t
 
 
 def qa_export_df(df: pd.DataFrame, n_units: int, *, level: int, label: str) -> None:
+    """Require one row per administrative unit and exposure month."""
     n_months = df["month_start"].nunique() if "month_start" in df.columns else 0
     expected = n_units * 12
     if len(df) != expected:
@@ -271,6 +274,7 @@ def warn_excel_crosswalk(iso3: str, df: pd.DataFrame, root: Path) -> None:
 
 
 def run_convert_country(root: Path, job: CountryJob, *, skip_existing: bool) -> None:
+    """Call scripts.admin_geography.gadm_shp_to_geojson for missing boundaries."""
     cmd = [
         sys.executable,
         "-m",
@@ -303,6 +307,7 @@ def export_country(
     dry_run: bool,
     modis_output_dir: Path | None = None,
 ) -> None:
+    """Apply the selected product exporters to one country, version, and ADM level."""
     print(f"\n=== {job.iso3} ({job.country_wave}) gadm{gadm_version} ADM{admin_level} ===")
     if job.defer_reason:
         print(f"  defer: {job.defer_reason}")
@@ -469,6 +474,7 @@ def select_jobs(
     iso3_list: list[str] | None,
     gadm_version_filter: str | None = None,
 ) -> list[CountryJob]:
+    """Select enabled jobs or require an unambiguous ISO3/GADM-version match."""
     if iso3_list:
         jobs: list[CountryJob] = []
         for iso in iso3_list:

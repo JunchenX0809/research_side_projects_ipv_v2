@@ -2,34 +2,19 @@
 
 Code to build administrative satellite exposure measures and link them to VACS respondents using approved survey dates and geography.
 
-## How the code fits together
+## Workflow at a glance
 
-`scripts/` contains entry points, `utils/` contains reusable calculations, and `config/` records run and product choices.
+For each VACS wave, the survey window and selected GADM geography define the exposure keys. `scripts/` runs the workflows, `utils/` supplies shared calculations, and `config/` records product and run choices.
 
 ```mermaid
-flowchart LR
-  subgraph Scripts["scripts/"]
-    GEO["admin_geography"]
-    FIRE["fire_exposure"]
-    CLUSTER["fire_clusters"]
-    AOD["aod_exposure"]
-    LINK["respondent_linkage"]
-  end
-  subgraph Utils["utils/"]
-    BOUND["gadm_boundaries"]
-    TIME["vacs_survey_time"]
-    FIREUTIL["adam_* / gee_fire_zonal / indonesia_viirs"]
-    AODUTIL["aod/*"]
-  end
-  GEO --> BOUND
-  GEO --> TIME
-  FIRE --> BOUND
-  FIRE --> TIME
-  FIRE --> FIREUTIL
-  CLUSTER --> BOUND
-  CLUSTER --> FIREUTIL
-  AOD --> AODUTIL
-  LINK --> TIME
+flowchart TB
+  WAVE["Wave setup: 12-month window + ADM level + GADM version"]
+  WAVE --> MEASURES["Generate or receive exposure tables"]
+  MEASURES --> PANEL["GADM unit × month measures"]
+  PANEL --> INPUTS["Join inputs: product registry + geography crosswalk + VACS outcomes"]
+  INPUTS --> BUILD["Wave builder: validate keys, derive window summaries, join respondents"]
+  BUILD --> OUTPUTS["Linked respondents + monthly panel + provenance logs"]
+  OUTPUTS --> VERIFY["Verify linked wave"]
 ```
 
 ## Exposure measures
@@ -37,17 +22,26 @@ flowchart LR
 FRP means fire radiative power; AOD means aerosol optical depth. The fire-cluster branch counts connected VNP64A1 burn patches, not verified ignitions.
 
 ```mermaid
-flowchart LR
-  MODIS["MODIS products + FIRMS"] -->|"fire count, FRP, burned area"| FIRE["fire_exposure scripts"]
-  V14["VIIRS VNP14A1"] -->|"unique fire count, FRP"| FIRE
-  V64["VIIRS VNP64A1"] -->|"burned area"| FIRE
-  V64 -->|"burn dates"| CLUSTER["fire_clusters scripts"]
-  FIRE -.->|"VIIRS unit/month keys"| CLUSTER
-  MAIAC["MODIS MAIAC AOD"] --> AOD["aod_exposure scripts"]
-  FIRE --> PANEL["Administrative-month exposure tables"]
-  CLUSTER --> PANEL
-  AOD --> PANEL
+flowchart TB
+  subgraph MODIS["MODIS fire measures"]
+    direction LR
+    M_INPUT["MODIS products + FIRMS"] --> M_SCRIPT["fire_exposure/"] --> M_OUTPUT["Fire count, FRP, burned area"]
+  end
+  subgraph VIIRS["VIIRS fire measures"]
+    direction LR
+    V_INPUT["VNP14A1 + VNP64A1"] --> V_SCRIPT["fire_exposure/"] --> V_OUTPUT["Unique fire count, FRP, burned area"]
+  end
+  subgraph PATCHES["VIIRS burn patches"]
+    direction LR
+    P_INPUT["VNP64A1 burn dates"] --> P_SCRIPT["fire_clusters/"] --> P_OUTPUT["Patch counts"]
+  end
+  subgraph AOD["Air quality"]
+    direction LR
+    A_INPUT["MAIAC AOD"] --> A_SCRIPT["aod_exposure/"] --> A_OUTPUT["AOD measures"]
+  end
 ```
+
+Each branch produces administrative-month exposure tables.
 
 ## Respondent linkage
 
@@ -55,14 +49,10 @@ A wave's exposure products are selected by `config/wave_exposure_products.csv`; 
 
 ```mermaid
 flowchart LR
-  LABELS["Survey geography"] --> CROSS["GADM crosswalks"]
-  CROSS --> WORKBOOK["build_vacs_gadm_linkage_workbook"]
-  WORKBOOK --> MASTER["VACS-GADM master linkage"]
-  OUTCOME["VACS outcomes"] --> BUILD["build_wave_exposure_demo"]
-  MASTER --> BUILD
-  REGISTRY["Product registry"] --> BUILD
-  PANEL["Administrative-month exposure tables"] --> BUILD
-  BUILD --> DEMO["Linked respondents + monthly panel + logs"]
+  GEO["Survey geography + GADM crosswalks"] --> MASTER["VACS-GADM master linkage"]
+  MASTER --> INPUTS["Wave inputs: outcomes, exposure tables, product registry"]
+  INPUTS --> BUILD["build_wave_exposure_demo"]
+  BUILD --> DEMO["Linked files + logs"]
   DEMO --> VERIFY["verify_wave_exposure_demo"]
 ```
 
@@ -70,7 +60,7 @@ flowchart LR
 
 | Topic | Guide |
 | --- | --- |
-| Script folder map | [Script entry points](scripts/README.md) |
+| Folder maps | [Script entry points](scripts/README.md), [utility map](utils/README.md), [guide index](skills/README.md) |
 | Fire metrics | [Fire exposure](skills/fire_exposure.md), [fire clusters](skills/fire_clusters.md), [country demos](skills/country_demos.md) |
 | AOD | [AOD exposure](skills/aod_exposure.md), [AOD utilities](skills/utils_aod.md) |
 | Geography and linkage | [Admin geography](skills/admin_geography.md), [respondent linkage](skills/respondent_linkage.md) |

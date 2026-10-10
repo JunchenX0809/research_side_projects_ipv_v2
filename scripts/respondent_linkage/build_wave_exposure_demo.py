@@ -378,6 +378,7 @@ def build(country: str, year: int, version: str, out_dir: Path, dry_run: bool,
           survey_key: str | None = None, crosswalk_path: str | None = None,
           source_overrides: tuple[str, ...] = (),
           extra_products: tuple[str, ...] = ()) -> None:
+    """Join registered unit-month products to one VACS wave and record provenance."""
     log = RunLog()
     slug = country.lower().replace(" ", "").replace("'", "")
     log.step(f"start  country={country} year={year} version={version}")

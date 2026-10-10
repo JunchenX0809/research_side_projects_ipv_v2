@@ -55,6 +55,7 @@ def wave_row(slug: str, year: int) -> dict[str, str]:
 
 
 def log_command(command: list[str], log_path: Path) -> int:
+    """Run a child module from the repo root and copy its output into the wave log."""
     print("$", " ".join(command), flush=True)
     with log_path.open("a") as log:
         log.write("\n$ " + " ".join(command) + "\n")
