@@ -3,10 +3,10 @@
 The field start below is approved study-timing metadata; this script does not read or
 require respondent-level records. Exposure window = 12 calendar months before field start =
 ``2014-09-01 .. 2015-08-31`` (Sep 2014 - Aug 2015, filename year 2015). This matches the
-Uganda summed-FRP run (``scripts/uganda_frp_sum_run.py``). VIIRS coverage starts 2012-01-19,
+Uganda summed-FRP run (``scripts/country_demos/uganda_frp_sum_run.py``). VIIRS coverage starts 2012-01-19,
 so this window is fully covered.
 
-Run: ``set -a; . ./.env; set +a; ./.venv/bin/python -m scripts.uganda_viirs_run``
+Run: ``set -a; . ./.env; set +a; .venv/bin/python -m scripts.country_demos.uganda_viirs_run``
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from utils.gadm_boundaries import gadm_level_normalized_features
 from utils.gee_fire_zonal import ee_initialize_from_environ
 from utils.vacs_survey_time import exposure_window_inclusive_before_field_start
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ISO3, VERSION = "UGA", "36"
 ADM0_NAME, ADM0_PCODE, SLUG = "Uganda", "UG", "uganda"
 FIELD_START = date(2015, 9, 1)  # Approved project-level field-start metadata.

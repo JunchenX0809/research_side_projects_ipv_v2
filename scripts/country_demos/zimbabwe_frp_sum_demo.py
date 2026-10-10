@@ -11,7 +11,7 @@ from pathlib import Path
 
 import ee
 
-from scripts.run_gadm_fire_exports import resolve_exposure_window
+from scripts.fire_exposure.run_gadm_fire_exports import resolve_exposure_window
 from utils.adam_frp_export import (
     build_adam_frp_sum_export,
     months_table_for_rolling,
@@ -25,7 +25,7 @@ from utils.vacs_survey_time import (
     resolve_vacs_survey_time_csv,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ISO3, WAVE, VERSION, LEVEL = "ZWE", "Zimbabwe (2017)", "36", 2
 OUT = ROOT / "data" / "processed" / "frp" / "zimbabwe_modis_frp_sum_gadm36_2016.csv"
 

@@ -20,3 +20,4 @@ HTI,Haiti (2012),Haiti,HT,haiti,36,2,1,,41 ADM2
 HND,Honduras (2017),Honduras,HN,honduras,36,2,1,,298 ADM2
 KEN,Kenya (2010),Kenya,KE,kenya,36,2,1,,wave 1 of 2
 KEN,Kenya(2019),Kenya,KE,kenya,36,2,1,,wave 2 of 2 (label has no space)
+UGA,Uganda (2015),Uganda,UG,uganda,36,2,0,unique_refresh_only,Approved field start 2015-09-01; prior exports used one-off scripts

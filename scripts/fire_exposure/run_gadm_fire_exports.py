@@ -7,11 +7,11 @@ and VACS survey dates. See ``howto_docs/modis_gadm_country_pipeline.md``.
 
 Examples::
 
-    python scripts/gadm_shp_to_geojson.py --version 40 --iso3 MOZ
-    python scripts/run_gadm_fire_exports.py --iso3 MOZ --export-only
-    python scripts/run_gadm_fire_exports.py --iso3 TZA --gadm-version 41 --export-only
-    python scripts/run_gadm_fire_exports.py --all
-    python scripts/run_gadm_fire_exports.py --iso3 ZWE --viirs-only --export-only
+    .venv/bin/python -m scripts.admin_geography.gadm_shp_to_geojson --version 40 --iso3 MOZ
+    .venv/bin/python -m scripts.fire_exposure.run_gadm_fire_exports --iso3 MOZ --export-only
+    .venv/bin/python -m scripts.fire_exposure.run_gadm_fire_exports --iso3 TZA --gadm-version 41 --export-only
+    .venv/bin/python -m scripts.fire_exposure.run_gadm_fire_exports --all
+    .venv/bin/python -m scripts.fire_exposure.run_gadm_fire_exports --iso3 ZWE --viirs-only --export-only
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
@@ -171,12 +171,13 @@ def output_paths(
     *,
     gadm_version: str,
     admin_level: int = 2,
+    modis_output_dir: Path | None = None,
 ) -> tuple[Path, Path]:
     year = exposure_end.year
     processed = root / "data" / "processed"
     # ADM2 keeps the original bare name; ADM1/ADM0 get a level marker so both can coexist.
     lvl = "" if admin_level == 2 else f"_adm{admin_level}"
-    modis = processed / "modis" / f"{job.country_slug}_modis_mcd64_gadm{gadm_version}{lvl}_{year}.csv"
+    modis = (modis_output_dir or processed / "modis") / f"{job.country_slug}_modis_mcd64_gadm{gadm_version}{lvl}_{year}.csv"
     firms = processed / "firms" / f"{job.country_slug}_firms_gadm{gadm_version}{lvl}_{year}.csv"
     return modis, firms
 
@@ -272,7 +273,8 @@ def warn_excel_crosswalk(iso3: str, df: pd.DataFrame, root: Path) -> None:
 def run_convert_country(root: Path, job: CountryJob, *, skip_existing: bool) -> None:
     cmd = [
         sys.executable,
-        str(_REPO / "scripts" / "gadm_shp_to_geojson.py"),
+        "-m",
+        "scripts.admin_geography.gadm_shp_to_geojson",
         "--version",
         job.gadm_version,
         "--iso3",
@@ -299,6 +301,7 @@ def export_country(
     frp_metric: str = "max",
     skip_existing: bool,
     dry_run: bool,
+    modis_output_dir: Path | None = None,
 ) -> None:
     print(f"\n=== {job.iso3} ({job.country_wave}) gadm{gadm_version} ADM{admin_level} ===")
     if job.defer_reason:
@@ -310,14 +313,15 @@ def export_country(
     if not p_geo.is_file():
         raise FileNotFoundError(
             f"Missing GeoJSON: {p_geo}\n"
-            f"Run: python scripts/gadm_shp_to_geojson.py --iso3 {job.iso3} --version {gadm_version}"
+            f"Run: .venv/bin/python -m scripts.admin_geography.gadm_shp_to_geojson --iso3 {job.iso3} --version {gadm_version}"
         )
 
     exposure_start, exposure_end = resolve_exposure_window(survey_parsed, job.country_wave)
     print(f"  exposure: {exposure_start} .. {exposure_end}")
 
     modis_path, firms_path = output_paths(
-        root, job, exposure_end, gadm_version=gadm_version, admin_level=admin_level
+        root, job, exposure_end, gadm_version=gadm_version, admin_level=admin_level,
+        modis_output_dir=modis_output_dir,
     )
     frp_path = frp_output_path(
         root,
@@ -345,8 +349,8 @@ def export_country(
         requested_paths.append(viirs_path)
 
     if dry_run:
-        names = ", ".join(p.name for p in requested_paths) or "no outputs"
-        print(f"  dry-run: would write {names}")
+        paths = ", ".join(str(p) for p in requested_paths) or "no outputs"
+        print(f"  dry-run: would write {paths}")
         return
 
     if skip_existing and requested_paths and all(p.is_file() for p in requested_paths):
@@ -541,6 +545,10 @@ def main() -> None:
     p.add_argument("--convert-only", action="store_true", help="Only run shapefile → GeoJSON")
     p.add_argument("--export-only", action="store_true", help="Skip convert step")
     p.add_argument("--modis-only", action="store_true")
+    p.add_argument(
+        "--modis-output-dir", type=Path,
+        help="Write MODIS burned-area CSVs here; requires --modis-only",
+    )
     p.add_argument("--firms-only", action="store_true")
     p.add_argument("--frp-only", action="store_true", help="Only export MODIS FRP intensity")
     p.add_argument("--include-frp", action="store_true", help="Also export MODIS FRP intensity")
@@ -555,6 +563,9 @@ def main() -> None:
     p.add_argument("--dry-run", action="store_true", help="Print plan; no GEE")
     p.add_argument("--project", help="Earth Engine GCP project id")
     args = p.parse_args()
+
+    if args.modis_output_dir is not None and not args.modis_only:
+        p.error("--modis-output-dir requires --modis-only")
 
     if args.frp_only and (
         args.modis_only
@@ -584,6 +595,9 @@ def main() -> None:
         p.error(f"Unknown --gadm-version {cli_gadm_version!r}; expected {list(GADM_VERSIONS)}")
 
     root = find_repo_root()
+    modis_output_dir = args.modis_output_dir
+    if modis_output_dir is not None and not modis_output_dir.is_absolute():
+        modis_output_dir = root / modis_output_dir
     _load_dotenv(root)
 
     iso3_list = None
@@ -658,6 +672,7 @@ def main() -> None:
                 frp_metric=args.frp_metric,
                 skip_existing=args.skip_existing,
                 dry_run=args.dry_run,
+                modis_output_dir=modis_output_dir,
             )
         except Exception as exc:
             print(f"  FAILED {job.iso3}: {exc}", file=sys.stderr)

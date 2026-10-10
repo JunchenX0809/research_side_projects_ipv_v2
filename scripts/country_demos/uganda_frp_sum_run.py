@@ -8,7 +8,7 @@ field start (resolved by the same helper the fleet uses):
 This deliberately does NOT match the teammate's ``Uganda_2015.csv``, which anchored on
 the field END (~2015-12-19) and sliced on the 19th; the correct anchor is the field start.
 
-Run: ``set -a; . ./.env; set +a; ./.venv/bin/python -m scripts.uganda_frp_sum_run``
+Run: ``set -a; . ./.env; set +a; .venv/bin/python -m scripts.country_demos.uganda_frp_sum_run``
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from utils.gadm_boundaries import gadm_level_normalized_features
 from utils.gee_fire_zonal import ee_initialize_from_environ
 from utils.vacs_survey_time import exposure_window_inclusive_before_field_start
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ISO3, VERSION = "UGA", "36"
 ADM0_NAME, ADM0_PCODE, SLUG = "Uganda", "UG", "uganda"
 FIELD_START = date(2015, 9, 1)  # Approved project-level field-start metadata.

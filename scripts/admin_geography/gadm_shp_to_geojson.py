@@ -7,12 +7,12 @@ If you downloaded ``gadm36_{ISO3}_shp.zip``, run this to build ``gadm36_{ISO3}_{
 
 Example (Zimbabwe, from existing shp folder)::
 
-    python scripts/gadm_shp_to_geojson.py --iso3 ZWE --version 36 \\
+    .venv/bin/python -m scripts.admin_geography.gadm_shp_to_geojson --iso3 ZWE --version 36 \\
         --shp-dir data/raw/gadm/3.6/gadm36_ZWE_shp
 
 Batch (all ADM2 countries under ``data/raw/gadm/3.6/``)::
 
-    python scripts/gadm_shp_to_geojson.py --version 36 --all
+    .venv/bin/python -m scripts.admin_geography.gadm_shp_to_geojson --version 36 --all
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import json
 import sys
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 

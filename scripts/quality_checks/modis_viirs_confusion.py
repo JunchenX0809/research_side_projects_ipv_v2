@@ -12,7 +12,7 @@ For each metric: a presence confusion matrix (value>0) with agreement rate + Coh
 kappa, an intensity-tier confusion matrix (none/low/med/high on pooled terciles), and
 the VIIRS-minus-MODIS difference distribution. Joined on [adm{level}_gid, month_start].
 
-Usage: ./.venv/bin/python -m scripts.modis_viirs_confusion [slug ver year level]
+Usage: .venv/bin/python -m scripts.quality_checks.modis_viirs_confusion [slug ver year level]
        (defaults: zimbabwe 36 2016 2)
 """
 
@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 EPS = 1e-9
 
 

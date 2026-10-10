@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare approved Lesotho district labels to GADM 3.6 ADM1 names / codes.
 
-Mirrors ``scripts/moldova_reg_gadm_match.py``. Lesotho has no GADM ADM2, and the
+Mirrors ``scripts/admin_geography/moldova_reg_gadm_match.py``. Lesotho has no GADM ADM2, and the
 input labels represent the 10 districts (ADM1), so the result is a district ->
 GADM ``ID_1`` crosswalk. The input must be a non-sensitive CSV containing only
 the distinct geography labels approved for linkage.
@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-_REPO = Path(__file__).resolve().parents[1]
+_REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 

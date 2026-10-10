@@ -21,30 +21,41 @@ from typing import Any
 import ee
 import pandas as pd
 
+from utils.adam_viirs_burn_export import burn_year_segments
 from utils.gee_fire_zonal import reduce_sum_per_feature_to_df
 from utils.vacs_survey_time import months_df_inclusive_range
 
 
 def mcd64a1_monthly_burn_km2_image(date_start: str, date_end_exclusive: str) -> ee.Image:
-    """Adam MODIS: sum of per-scene burned km² where ``BurnDate > 0`` (``Adam_Modis.docx``)."""
-    mcd = (
-        ee.ImageCollection("MODIS/061/MCD64A1")
-        .filter(ee.Filter.date(date_start, date_end_exclusive))
-        .select("BurnDate")
-    )
+    """Burned km² on exact dates from MCD64A1 ordinal ``BurnDate`` pixels.
 
-    def _per_scene(img: ee.Image) -> ee.Image:
-        burned = img.select("BurnDate").gt(0)
-        return (
-            ee.Image.pixelArea()
-            .divide(1e6)
-            .updateMask(burned)
-            .rename("burned_area_km2")
+    The source images are monthly, while survey intervals may start mid-month.
+    Reuse the year/ordinal-day segmentation of the VIIRS burned-area exporter;
+    retain the project's existing MODIS rule of no additional QA filter.
+    """
+    start = date.fromisoformat(date_start)
+    end = date.fromisoformat(date_end_exclusive)
+    segments = burn_year_segments(start, end)
+    images: list[ee.Image] = []
+    for segment in segments:
+        mcd = ee.ImageCollection("MODIS/061/MCD64A1").filterDate(
+            f"{segment.year:04d}-01-01", f"{segment.year + 1:04d}-01-01"
         )
 
-    summed = mcd.map(_per_scene).sum()
-    empty = ee.Image.constant(0).rename("burned_area_km2")
-    return ee.Image(ee.Algorithms.If(mcd.size().gt(0), summed, empty))
+        def _per_scene(img: ee.Image, segment=segment) -> ee.Image:
+            burn_day = img.select("BurnDate")
+            in_interval = burn_day.gte(segment.start_doy).And(
+                burn_day.lt(segment.end_doy_exclusive)
+            )
+            return (
+                ee.Image.pixelArea()
+                .divide(1e6)
+                .updateMask(in_interval)
+                .rename("burned_area_km2")
+            )
+
+        images.append(mcd.map(_per_scene).sum())
+    return ee.ImageCollection.fromImages(images).sum().unmask(0).rename("burned_area_km2")
 
 
 def adam_month_end_exclusive(month_start: date) -> date:
@@ -254,5 +265,7 @@ def build_adam_modis_export(
 def write_adam_modis_csv(df: pd.DataFrame, path: Path) -> Path:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
+    pending = path.with_suffix(path.suffix + ".tmp")
+    df.to_csv(pending, index=False)
+    pending.replace(path)
     return path

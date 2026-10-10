@@ -21,16 +21,22 @@ from utils.adam_modis_export import (
     filter_export_months,
     months_table_for_rolling,
 )
-from utils.gee_fire_zonal import reduce_max_per_feature_to_df, reduce_sum_per_feature_to_df
+from utils.gee_fire_zonal import (
+    reduce_max_per_feature_to_df,
+    reduce_sum_per_feature_to_df,
+    reduce_unweighted_sum_per_feature_to_df,
+)
 
 __all__ = [
     "VIIRS_COLLECTION",
     "VIIRS_FULL_COVERAGE_START",
     "build_adam_viirs_export",
+    "build_adam_viirs_unique_export",
     "months_table_for_rolling",
     "to_adam_viirs_wide_columns",
     "validate_viirs_coverage",
     "viirs_monthly_fire_count_image",
+    "viirs_monthly_unique_fire_count_image",
     "viirs_monthly_max_frp_mw_image",
     "viirs_monthly_sum_frp_mw_image",
     "write_adam_viirs_csv",
@@ -84,6 +90,29 @@ def viirs_monthly_fire_count_image(date_start: str, date_end_exclusive: str) -> 
         .setDefaultProjection(projection)
     )
     return ee.Image(ee.Algorithms.If(viirs.size().gt(0), summed, empty)).rename(
+        "monthly_fire_count"
+    )
+
+
+def viirs_monthly_unique_fire_count_image(
+    date_start: str, date_end_exclusive: str
+) -> ee.Image:
+    """Binary monthly fire presence: each VIIRS grid-cell location is at most 1."""
+    projection = _viirs_projection()
+    viirs = (
+        ee.ImageCollection(VIIRS_COLLECTION)
+        .filter(ee.Filter.date(date_start, date_end_exclusive))
+        .select("FireMask")
+    )
+    unique = (
+        viirs.map(_viirs_fire_flag_image)
+        .max()
+        .gt(0)
+        .unmask(0)
+        .setDefaultProjection(projection)
+    )
+    empty = ee.Image.constant(0).setDefaultProjection(projection)
+    return ee.Image(ee.Algorithms.If(viirs.size().gt(0), unique, empty)).rename(
         "monthly_fire_count"
     )
 
@@ -201,6 +230,37 @@ def admin_monthly_viirs_from_gee(
     return pd.concat(parts, ignore_index=True)
 
 
+def admin_monthly_unique_viirs_from_gee(
+    months_table: pd.DataFrame,
+    regions: ee.FeatureCollection,
+    *,
+    scale_m: float = 1000.0,
+    region_features: list[dict] | None = None,
+) -> pd.DataFrame:
+    """Admin unit x month with centroid-counted unique VIIRS fire pixels only."""
+    parts: list[pd.DataFrame] = []
+    for _, mr in months_table.iterrows():
+        ms = mr["month_start"]
+        if not isinstance(ms, date):
+            ms = pd.Timestamp(ms).date()
+        mex_s = (
+            mr["filter_end_exclusive"].isoformat()
+            if hasattr(mr["filter_end_exclusive"], "isoformat")
+            else str(mr["filter_end_exclusive"])[:10]
+        )
+        fire_df = reduce_unweighted_sum_per_feature_to_df(
+            viirs_monthly_unique_fire_count_image(ms.isoformat(), mex_s),
+            regions,
+            band_name="monthly_fire_count",
+            out_column="monthly_fire_count",
+            scale_m=scale_m,
+            region_features=region_features,
+        )
+        fire_df["month_start"] = ms
+        parts.append(fire_df)
+    return pd.concat(parts, ignore_index=True)
+
+
 def to_adam_viirs_wide_columns(
     long_df: pd.DataFrame,
     *,
@@ -284,6 +344,37 @@ def build_adam_viirs_export(
         unit_col=unit_col,
         value_col="monthly_sum_frp_mw",
         out_col="avg12_sum_frp_mw",
+    )
+    return to_adam_viirs_wide_columns(
+        long_df, adm0_name=adm0_name, adm0_pcode=adm0_pcode, unit_level=unit_level
+    )
+
+
+def build_adam_viirs_unique_export(
+    months_table: pd.DataFrame,
+    regions: ee.FeatureCollection,
+    *,
+    adm0_name: str,
+    adm0_pcode: str,
+    exposure_start: date,
+    exposure_end: date,
+    scale_m: float = 1000.0,
+    region_features: list[dict] | None = None,
+    unit_level: int = 2,
+    require_full_coverage: bool = True,
+) -> pd.DataFrame:
+    """Build active-fire-only output from monthly distinct VIIRS pixel locations."""
+    validate_viirs_coverage(exposure_start, require_full_coverage=require_full_coverage)
+    unit_col = f"ADM{unit_level}_CODE"
+    long_df = admin_monthly_unique_viirs_from_gee(
+        months_table, regions, scale_m=scale_m, region_features=region_features
+    )
+    long_df = filter_export_months(long_df, exposure_start, exposure_end)
+    long_df = add_window_avg(
+        long_df,
+        unit_col=unit_col,
+        value_col="monthly_fire_count",
+        out_col="avg12_fire_count",
     )
     return to_adam_viirs_wide_columns(
         long_df, adm0_name=adm0_name, adm0_pcode=adm0_pcode, unit_level=unit_level

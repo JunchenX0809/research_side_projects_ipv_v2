@@ -26,6 +26,7 @@ from utils.adam_viirs_burn_export import (
 from utils.adam_viirs_export import (
     to_adam_viirs_wide_columns,
     viirs_monthly_fire_count_image,
+    viirs_monthly_unique_fire_count_image,
     viirs_monthly_max_frp_mw_image,
     viirs_monthly_sum_frp_mw_image,
 )
@@ -320,6 +321,83 @@ def fetch_active_viirs_chunk(
 
     response = _flatten_feature_collections(monthly_collections).getInfo()
     return pd.DataFrame([item.get("properties") or {} for item in response["features"]])
+
+
+def fetch_unique_viirs_chunk(
+    months: pd.DataFrame,
+    feature_chunk: list[dict[str, Any]],
+    *,
+    scale_m: float = 1000.0,
+) -> pd.DataFrame:
+    """Fetch all 12 VNP14A1 **unique-pixel** counts for one chunk in one EE request.
+
+    Sibling of :func:`fetch_active_viirs_chunk`, which stays untouched so the legacy
+    pixel-day product remains reproducible. The only difference is the source image:
+    ``viirs_monthly_unique_fire_count_image`` counts each grid cell at most once per
+    month, where the legacy image sums detections across days.
+
+    Both share the same ``FireMask >= 7`` threshold, the same VIIRS native projection
+    and the same ``scale_m``, so the two metrics stay directly comparable.
+    """
+    regions = ee.FeatureCollection(feature_chunk)
+    monthly_collections: list[ee.FeatureCollection] = []
+    for row in months.itertuples(index=False):
+        start = row.month_start.isoformat()
+        end = row.month_end.isoformat()
+        image = viirs_monthly_unique_fire_count_image(start, end)
+        reduced = image.reduceRegions(
+            collection=regions,
+            reducer=ee.Reducer.sum(),
+            scale=scale_m,
+            tileScale=4,
+            maxPixelsPerRegion=1e13,
+        )
+
+        def _format(feature: ee.Feature, start: str = start, end: str = end) -> ee.Feature:
+            # reduceRegions names a single-band sum "sum"; fall back only if the band
+            # name survived, matching how fetch_burned_area_chunk guards the same case.
+            value = ee.Algorithms.If(
+                feature.propertyNames().contains("monthly_fire_count"),
+                feature.get("monthly_fire_count"),
+                feature.get("sum"),
+            )
+            properties = (
+                ee.Dictionary(feature.toDictionary(BOUNDARY_PROPERTIES))
+                .set("month_start", start)
+                .set("month_end", end)
+                .set("monthly_fire_count", value)
+            )
+            return ee.Feature(None, properties)
+
+        monthly_collections.append(reduced.map(_format))
+
+    response = _flatten_feature_collections(monthly_collections).getInfo()
+    return pd.DataFrame([item.get("properties") or {} for item in response["features"]])
+
+
+def finalize_unique_viirs(rows: pd.DataFrame) -> pd.DataFrame:
+    """Apply the VNP14A1 schema to unique counts, restoring exact supplied end dates.
+
+    ``avg12_fire_count`` is recomputed here from the new monthly values. The two always
+    move together; updating one without the other leaves the file self-inconsistent.
+    """
+    long_df = add_window_avg(
+        rows.copy(),
+        unit_col="ADM2_CODE",
+        value_col="monthly_fire_count",
+        out_col="avg12_fire_count",
+    )
+    exact_ends = {
+        pd.Timestamp(start).strftime("%Y-%m-%d"): pd.Timestamp(end).strftime("%Y-%m-%d")
+        for start, end in zip(long_df["month_start"], long_df["month_end"], strict=True)
+    }
+    output = to_adam_viirs_wide_columns(
+        long_df, adm0_name="Indonesia", adm0_pcode="ID", unit_level=2
+    )
+    output["month_end"] = output["month_start"].map(exact_ends)
+    if output["month_end"].isna().any():
+        raise ValueError("Could not restore exact Indonesia VIIRS month_end values")
+    return output.reset_index(drop=True)
 
 
 def fetch_burned_area_chunk(

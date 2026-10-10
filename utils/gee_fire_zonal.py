@@ -170,6 +170,27 @@ def _reduce_regions_sum_to_rows(
     )
 
 
+def _reduce_regions_unweighted_sum_to_rows(
+    image: ee.Image,
+    regions: ee.FeatureCollection,
+    *,
+    band_name: str,
+    scale_m: float,
+    tile_scale: int,
+    max_pixels_per_region: float,
+) -> list[dict[str, Any]]:
+    """Sum pixels whose centroids fall inside each region (no boundary fractions)."""
+    return _reduce_regions_to_rows(
+        image,
+        regions,
+        band_name=band_name,
+        reducer=ee.Reducer.sum().unweighted(),
+        scale_m=scale_m,
+        tile_scale=tile_scale,
+        max_pixels_per_region=max_pixels_per_region,
+    )
+
+
 def reduce_sum_m2_per_feature_to_df(
     area_m2: ee.Image,
     regions: ee.FeatureCollection,
@@ -231,6 +252,41 @@ def reduce_sum_per_feature_to_df(
     ):
         rows.extend(
             _reduce_regions_sum_to_rows(
+                image,
+                chunk_fc,
+                band_name=band_name,
+                scale_m=scale_m,
+                tile_scale=tile_scale,
+                max_pixels_per_region=max_pixels_per_region,
+            )
+        )
+    for p in rows:
+        val = p.get(band_name) if p.get(band_name) is not None else p.get("sum")
+        p[out_column] = float(val) if val is not None else None
+    return pd.DataFrame(rows)
+
+
+def reduce_unweighted_sum_per_feature_to_df(
+    image: ee.Image,
+    regions: ee.FeatureCollection,
+    *,
+    band_name: str,
+    out_column: str,
+    scale_m: float,
+    tile_scale: int = 4,
+    max_pixels_per_region: float = 1e13,
+    region_chunk_size: int = DEFAULT_REGION_CHUNK_SIZE,
+    region_features: list[dict[str, Any]] | None = None,
+) -> pd.DataFrame:
+    """Centroid-based ``reduceRegions`` sum without fractional boundary weights."""
+    rows: list[dict[str, Any]] = []
+    for chunk_fc in _region_collections_for_reduce(
+        regions,
+        region_features=region_features,
+        chunk_size=region_chunk_size,
+    ):
+        rows.extend(
+            _reduce_regions_unweighted_sum_to_rows(
                 image,
                 chunk_fc,
                 band_name=band_name,

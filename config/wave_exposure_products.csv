@@ -1,0 +1,78 @@
+country,year,country_wave,product,gadm_version,level,path,source,notes
+Eswatini,2007,Eswatini (2007),firms_unique,3.6,1,data/processed/firms_unique/eswatini_firms_gadm36_adm1_2007.csv,repo pipeline (run_unique_active_fire_exports.py),"MODIS FIRMS active fire, unique pixels per unit-month (not pixel-days)"
+Eswatini,2007,Eswatini (2007),frp,3.6,1,data/processed/frp/eswatini_modis_frp_sum_gadm36_adm1_2007.csv,"repo pipeline (run_gadm_fire_exports.py, FRP sum)",MOD14A1/MYD14A1 summed FRP; pixel-day based (FRP was never moved to unique pixels)
+Eswatini,2007,Eswatini (2007),modis_mcd64,3.6,1,data/processed/modis/Eswatini_modis_2007_admin1.csv,"teammate export, received via Dropbox 2026-09-20",MCD64A1 burned area. WARNING: avg12_burned_area_km2 does NOT equal the mean of the file's 12 monthly values
+Zambia,2014,Zambia (2014),firms_unique,3.6,2,data/processed/firms_unique/zambia_firms_gadm36_2014.csv,repo pipeline (run_unique_active_fire_exports.py),"MODIS FIRMS active fire, unique pixels per unit-month (not pixel-days)"
+Zambia,2014,Zambia (2014),frp,3.6,2,data/processed/frp/zambia_modis_frp_sum_gadm36_2014.csv,"repo pipeline (run_gadm_fire_exports.py, FRP sum)",MOD14A1/MYD14A1 summed FRP; pixel-day based (FRP was never moved to unique pixels)
+Zambia,2014,Zambia (2014),modis_mcd64,3.6,2,data/processed/modis/zambia_modis_mcd64_gadm36_2014.csv,repo pipeline (run_gadm_fire_exports.py),MCD64A1 burned area
+Zambia,2014,Zambia (2014),viirs_unique,3.6,2,data/processed/viirs_unique/zambia_viirs_vnp14a1_gadm36_2014.csv,repo pipeline (run_unique_active_fire_exports.py),"VIIRS VNP14A1 active fire, unique pixels per unit-month (not pixel-days)"
+Namibia,2019,Namibia (2019),firms_unique,3.6,1,data/processed/firms_unique/namibia_firms_gadm36_adm1_2019.csv,repo pipeline (run_unique_active_fire_exports.py),"MODIS FIRMS active fire, unique pixels per unit-month (not pixel-days)"
+Namibia,2019,Namibia (2019),frp,3.6,1,data/processed/frp/namibia_modis_frp_sum_gadm36_adm1_2019.csv,"repo pipeline (run_gadm_fire_exports.py, FRP sum)",MOD14A1/MYD14A1 summed FRP; pixel-day based
+Namibia,2019,Namibia (2019),modis_mcd64,3.6,1,data/processed/modis/namibia_modis_mcd64_gadm36_adm1_2019.csv,repo pipeline (run_gadm_fire_exports.py),MCD64A1 monthly burned area; annual mean computed from monthly values
+Namibia,2019,Namibia (2019),viirs_unique,3.6,1,data/processed/viirs_unique/namibia_viirs_vnp14a1_gadm36_adm1_2019.csv,repo pipeline (run_unique_active_fire_exports.py),"VIIRS VNP14A1 active fire, unique pixels per unit-month (not pixel-days)"
+Nigeria,2014,Nigeria (2014),firms_unique,3.6,1,data/processed/firms_unique/nigeria_firms_gadm36_adm1_2014.csv,repo pipeline (run_unique_active_fire_exports.py),"MODIS FIRMS active fire, unique pixels per unit-month (not pixel-days)"
+Nigeria,2014,Nigeria (2014),frp,3.6,1,data/processed/frp/nigeria_modis_frp_sum_gadm36_adm1_2014.csv,"repo pipeline (run_gadm_fire_exports.py, FRP sum)",MOD14A1/MYD14A1 summed FRP; pixel-day based
+Nigeria,2014,Nigeria (2014),modis_mcd64,3.6,1,data/processed/modis/nigeria_modis_mcd64_gadm36_adm1_2014.csv,repo pipeline (run_gadm_fire_exports.py),MCD64A1 monthly burned area; annual mean computed from monthly values
+Nigeria,2014,Nigeria (2014),viirs_unique,3.6,1,data/processed/viirs_unique/nigeria_viirs_vnp14a1_gadm36_adm1_2014.csv,repo pipeline (run_unique_active_fire_exports.py),"VIIRS VNP14A1 active fire, unique pixels per unit-month (not pixel-days)"
+Mozambique,2019,Mozambique (2019),firms_unique,4.0,1,data/processed/firms_unique/mozambique_firms_gadm40_adm1_2019.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Mozambique,2019,Mozambique (2019),frp,4.0,1,data/processed/frp/mozambique_modis_frp_sum_gadm40_adm1_2019.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Mozambique,2019,Mozambique (2019),modis_mcd64,4.0,1,data/processed/modis/mozambique_modis_mcd64_gadm40_adm1_2019.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Mozambique,2019,Mozambique (2019),viirs_unique,4.0,1,data/processed/viirs_unique/mozambique_viirs_vnp14a1_gadm40_adm1_2019.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Tanzania,2024,Tanzania (2024),firms_unique,4.1,1,data/processed/firms_unique/tanzania_firms_gadm41_adm1_2024.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Tanzania,2024,Tanzania (2024),frp,4.1,1,data/processed/frp/tanzania_modis_frp_sum_gadm41_adm1_2024.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Tanzania,2024,Tanzania (2024),modis_mcd64,4.1,1,data/processed/modis/tanzania_modis_mcd64_gadm41_adm1_2024.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Tanzania,2024,Tanzania (2024),viirs_unique,4.1,1,data/processed/viirs_unique/tanzania_viirs_vnp14a1_gadm41_adm1_2024.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Lesotho,2018,Letsotho (2018),firms_unique,3.6,1,data/processed/firms_unique/lesotho_firms_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Lesotho,2018,Letsotho (2018),frp,3.6,1,data/processed/frp/lesotho_modis_frp_sum_gadm36_adm1_2018.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Lesotho,2018,Letsotho (2018),modis_mcd64,3.6,1,data/processed/modis/lesotho_modis_mcd64_gadm36_adm1_2018.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Lesotho,2018,Letsotho (2018),viirs_unique,3.6,1,data/processed/viirs_unique/lesotho_viirs_vnp14a1_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Malawi,2013,Malawi (2013),firms_unique,3.6,1,data/processed/firms_unique/malawi_firms_gadm36_adm1_2013.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Malawi,2013,Malawi (2013),frp,3.6,1,data/processed/frp/malawi_modis_frp_sum_gadm36_adm1_2013.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Malawi,2013,Malawi (2013),modis_mcd64,3.6,1,data/processed/modis/malawi_modis_mcd64_gadm36_adm1_2013.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Malawi,2013,Malawi (2013),viirs_unique,3.6,1,data/processed/viirs_unique/malawi_viirs_vnp14a1_gadm36_adm1_2013.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Moldova,2013,Moldova (2013),firms_unique,3.6,1,data/processed/firms_unique/moldova_firms_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Moldova,2013,Moldova (2013),frp,3.6,1,data/processed/frp/moldova_modis_frp_sum_gadm36_adm1_2018.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Moldova,2013,Moldova (2013),modis_mcd64,3.6,1,data/processed/modis/moldova_modis_mcd64_gadm36_adm1_2018.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Moldova,2013,Moldova (2013),viirs_unique,3.6,1,data/processed/viirs_unique/moldova_viirs_vnp14a1_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Eswatini,2022,Eswatini (2022),firms_unique,4.1,1,data/processed/firms_unique/eswatini_firms_gadm41_adm1_2022.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Eswatini,2022,Eswatini (2022),frp,4.1,1,data/processed/frp/eswatini_modis_frp_sum_gadm41_adm1_2022.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Eswatini,2022,Eswatini (2022),modis_mcd64,4.1,1,data/processed/modis/Eswatini_2022_admin1.csv,teammate export,monthly burned area; annual mean from monthly values
+Eswatini,2022,Eswatini (2022),viirs_unique,4.1,1,data/processed/viirs_unique/eswatini_viirs_vnp14a1_gadm41_adm1_2022.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Rwanda,2016,Rwanda,firms_unique,3.6,2,data/processed/firms_unique/rwanda_firms_gadm36_2015.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Rwanda,2016,Rwanda,frp,3.6,2,data/processed/frp/rwanda_modis_frp_sum_gadm36_2015.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Rwanda,2016,Rwanda,modis_mcd64,3.6,2,data/processed/modis/rwanda_modis_mcd64_gadm36_2015.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Rwanda,2016,Rwanda,viirs_unique,3.6,2,data/processed/viirs_unique/rwanda_viirs_vnp14a1_gadm36_2015.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+El Salvador,2018,El Salvador (2018),firms_unique,3.6,2,data/processed/firms_unique/elsalvador_firms_gadm36_2017.csv,repo pipeline (unique active fire),monthly unique fire pixels
+El Salvador,2018,El Salvador (2018),frp,3.6,2,data/processed/frp/elsalvador_modis_frp_sum_gadm36_2017.csv,repo pipeline (FRP sum),monthly FRP sum and max
+El Salvador,2018,El Salvador (2018),modis_mcd64,3.6,2,data/processed/ElSalvador_2017_v2.csv,teammate export,monthly burned area; annual mean from monthly values
+El Salvador,2018,El Salvador (2018),viirs_unique,3.6,2,data/processed/viirs_unique/elsalvador_viirs_vnp14a1_gadm36_2017.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Haiti,2012,Haiti (2012),firms_unique,3.6,2,data/processed/firms_unique/haiti_firms_gadm36_2012.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Haiti,2012,Haiti (2012),frp,3.6,2,data/processed/frp/haiti_modis_frp_sum_gadm36_2012.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Haiti,2012,Haiti (2012),modis_mcd64,3.6,2,data/processed/modis/Haiti_2012_admin2.csv,teammate export,monthly burned area; annual mean from monthly values
+Cote d'Ivoire,2019,Cotedivoire (2019),firms_unique,3.6,2,data/processed/firms_unique/cotedivoire_firms_gadm36_2018.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Cote d'Ivoire,2019,Cotedivoire (2019),frp,3.6,2,data/processed/frp/cotedivoire_modis_frp_sum_gadm36_2018.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Cote d'Ivoire,2019,Cotedivoire (2019),modis_mcd64,3.6,2,data/processed/modis/Cotedivoire_2018_admin2.csv,teammate export,monthly burned area; annual mean from monthly values
+Cote d'Ivoire,2019,Cotedivoire (2019),viirs_unique,3.6,2,data/processed/viirs_unique/cotedivoire_viirs_vnp14a1_gadm36_2018.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Honduras,2017,Honduras (2017),firms_unique,3.6,2,data/processed/firms_unique/honduras_firms_gadm36_2017.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Honduras,2017,Honduras (2017),frp,3.6,2,data/processed/frp/honduras_modis_frp_sum_gadm36_2017.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Honduras,2017,Honduras (2017),modis_mcd64,3.6,2,data/processed/modis/Honduras_2017_admin2.csv,teammate export,monthly burned area; annual mean from monthly values
+Honduras,2017,Honduras (2017),viirs_unique,3.6,2,data/processed/viirs_unique/honduras_viirs_vnp14a1_gadm36_2017.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Kenya,2019,Kenya(2019),firms_unique,3.6,1,data/processed/firms_unique/kenya_firms_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Kenya,2019,Kenya(2019),frp,3.6,1,data/processed/frp/kenya_modis_frp_sum_gadm36_adm1_2018.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Kenya,2019,Kenya(2019),modis_mcd64,3.6,1,data/processed/modis/Kenya_2019_admin1.csv,teammate export,monthly burned area; annual mean from monthly values
+Kenya,2019,Kenya(2019),viirs_unique,3.6,1,data/processed/viirs_unique/kenya_viirs_vnp14a1_gadm36_adm1_2018.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Zimbabwe,2017,Zimbabwe (2017),firms_unique,3.6,2,data/processed/firms_unique/zimbabwe_firms_gadm36_2016.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Zimbabwe,2017,Zimbabwe (2017),frp,3.6,2,data/processed/frp/zimbabwe_modis_frp_sum_gadm36_2016.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Zimbabwe,2017,Zimbabwe (2017),modis_mcd64,3.6,2,data/processed/modis/zimbabwe_modis_mcd64_gadm36_2016.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Zimbabwe,2017,Zimbabwe (2017),viirs_unique,3.6,2,data/processed/viirs_unique/zimbabwe_viirs_vnp14a1_gadm36_2016.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Colombia,2018,Colombia (2018),firms_unique,4.1,2,data/processed/gadm4_1_new/firms_unique/colombia_firms_gadm41_2018.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Colombia,2018,Colombia (2018),frp,4.1,2,data/processed/gadm4_1_new/frp/colombia_modis_frp_sum_gadm41_2018.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Colombia,2018,Colombia (2018),modis_mcd64,4.1,2,data/processed/gadm4_1_new/modis/colombia_modis_mcd64_gadm41_2018.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Colombia,2018,Colombia (2018),viirs_unique,4.1,2,data/processed/gadm4_1_new/viirs_unique/colombia_viirs_vnp14a1_gadm41_2018.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Cambodia,2013,Cambodia (2013),firms_unique,4.1,2,data/processed/gadm4_1_new/firms_unique/cambodia_firms_gadm41_2013.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Cambodia,2013,Cambodia (2013),frp,4.1,2,data/processed/gadm4_1_new/frp/cambodia_modis_frp_sum_gadm41_2013.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Cambodia,2013,Cambodia (2013),modis_mcd64,4.1,2,data/processed/gadm4_1_new/modis/cambodia_modis_mcd64_gadm41_2013.csv,repo pipeline (MCD64A1),monthly burned area; annual mean from monthly values
+Cambodia,2013,Cambodia (2013),viirs_unique,4.1,2,data/processed/gadm4_1_new/viirs_unique/cambodia_viirs_vnp14a1_gadm41_2013.csv,repo pipeline (unique active fire),monthly unique VIIRS fire pixels
+Kenya,2010,Kenya (2010),firms_unique,3.6,1,data/processed/firms_unique/kenya_firms_gadm36_adm1_2010.csv,repo pipeline (unique active fire),monthly unique fire pixels
+Kenya,2010,Kenya (2010),frp,3.6,1,data/processed/frp/kenya_modis_frp_sum_gadm36_adm1_2010.csv,repo pipeline (FRP sum),monthly FRP sum and max
+Kenya,2010,Kenya (2010),modis_mcd64,3.6,1,data/processed/modis/Kenya_2010_admin1.csv,teammate export,monthly burned area; annual mean from monthly values

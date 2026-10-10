@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import ee
 import pandas as pd
@@ -27,15 +28,25 @@ from utils.adam_modis_export import (
     filter_export_months,
     months_table_for_rolling,
 )
-from utils.gee_fire_zonal import reduce_sum_per_feature_to_df
+from utils.gee_fire_zonal import (
+    reduce_sum_per_feature_to_df,
+    reduce_unweighted_sum_per_feature_to_df,
+)
 
 # Re-export for notebooks that build months_table once for MODIS + FIRMS
 __all__ = [
     "build_adam_firms_export",
+    "build_adam_firms_unique_export",
     "firms_monthly_fire_count_image",
+    "firms_monthly_unique_fire_count_image",
     "months_table_for_rolling",
     "write_adam_firms_csv",
 ]
+
+
+def _firms_fire_flag_image(img: ee.Image) -> ee.Image:
+    """Binary MODIS FIRMS active-fire presence for one daily image."""
+    return img.select("T21").mask().unmask(0).rename("fire")
 
 
 def firms_monthly_fire_count_image(date_start: str, date_end_exclusive: str) -> ee.Image:
@@ -51,12 +62,25 @@ def firms_monthly_fire_count_image(date_start: str, date_end_exclusive: str) -> 
         .select("T21")
     )
 
-    def _daily_fire(img: ee.Image) -> ee.Image:
-        return img.select("T21").mask().unmask(0).rename("fire")
-
-    summed = firms.map(_daily_fire).sum()
+    summed = firms.map(_firms_fire_flag_image).sum()
     empty = ee.Image.constant(0).rename("monthly_fire_count")
     return ee.Image(ee.Algorithms.If(firms.size().gt(0), summed, empty)).rename(
+        "monthly_fire_count"
+    )
+
+
+def firms_monthly_unique_fire_count_image(
+    date_start: str, date_end_exclusive: str
+) -> ee.Image:
+    """Binary monthly fire presence: each FIRMS grid-cell location is at most 1."""
+    firms = (
+        ee.ImageCollection("FIRMS")
+        .filter(ee.Filter.date(date_start, date_end_exclusive))
+        .select("T21")
+    )
+    unique = firms.map(_firms_fire_flag_image).max().gt(0).unmask(0)
+    empty = ee.Image.constant(0)
+    return ee.Image(ee.Algorithms.If(firms.size().gt(0), unique, empty)).rename(
         "monthly_fire_count"
     )
 
@@ -82,6 +106,37 @@ def district_monthly_firms_from_gee(
         img = firms_monthly_fire_count_image(ms.isoformat(), mex_s)
         bdf = reduce_sum_per_feature_to_df(
             img,
+            regions,
+            band_name="monthly_fire_count",
+            out_column="monthly_fire_count",
+            scale_m=scale_m,
+            region_features=region_features,
+        )
+        bdf["month_start"] = ms
+        parts.append(bdf)
+    return pd.concat(parts, ignore_index=True)
+
+
+def district_monthly_unique_firms_from_gee(
+    months_table: pd.DataFrame,
+    regions: ee.FeatureCollection,
+    *,
+    scale_m: float = 1000.0,
+    region_features: list[dict[str, Any]] | None = None,
+) -> pd.DataFrame:
+    """Admin unit x month with centroid-counted unique FIRMS fire pixels."""
+    parts: list[pd.DataFrame] = []
+    for _, mr in months_table.iterrows():
+        ms = mr["month_start"]
+        if not isinstance(ms, date):
+            ms = pd.Timestamp(ms).date()
+        mex_s = (
+            mr["filter_end_exclusive"].isoformat()
+            if hasattr(mr["filter_end_exclusive"], "isoformat")
+            else str(mr["filter_end_exclusive"])[:10]
+        )
+        bdf = reduce_unweighted_sum_per_feature_to_df(
+            firms_monthly_unique_fire_count_image(ms.isoformat(), mex_s),
             regions,
             band_name="monthly_fire_count",
             out_column="monthly_fire_count",
@@ -156,6 +211,35 @@ def build_adam_firms_export(
     """GEE pull → exposure-month filter → fixed 12-month avg → Adam FIRMS column names."""
     unit_col = f"ADM{unit_level}_CODE"
     long_df = district_monthly_firms_from_gee(
+        months_table, regions, scale_m=scale_m, region_features=region_features
+    )
+    long_df = filter_export_months(long_df, exposure_start, exposure_end)
+    long_df = add_window_avg(
+        long_df,
+        unit_col=unit_col,
+        value_col="monthly_fire_count",
+        out_col="avg12_fire_count",
+    )
+    return to_adam_firms_wide_columns(
+        long_df, adm0_name=adm0_name, adm0_pcode=adm0_pcode, unit_level=unit_level
+    )
+
+
+def build_adam_firms_unique_export(
+    months_table: pd.DataFrame,
+    regions: ee.FeatureCollection,
+    *,
+    adm0_name: str,
+    adm0_pcode: str,
+    exposure_start: date,
+    exposure_end: date,
+    scale_m: float = 1000.0,
+    region_features: list[dict[str, Any]] | None = None,
+    unit_level: int = 2,
+) -> pd.DataFrame:
+    """Build active-fire-only output from monthly distinct FIRMS pixel locations."""
+    unit_col = f"ADM{unit_level}_CODE"
+    long_df = district_monthly_unique_firms_from_gee(
         months_table, regions, scale_m=scale_m, region_features=region_features
     )
     long_df = filter_export_months(long_df, exposure_start, exposure_end)
